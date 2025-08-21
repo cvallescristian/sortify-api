@@ -1,0 +1,6 @@
+{
+  "deploy": {
+    "startCommand": "bun index.ts",
+    "healthcheckPath": "/health"
+  }
+}

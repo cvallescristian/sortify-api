@@ -8,19 +8,21 @@ app.use('*', cors());
 
 // Hello World routes
 app.get('/', (c) => {
-  return c.text('Hello World from Bun + Hono! 🚀');
-});
-
-app.get('/json', (c) => {
   return c.json({
-    message: 'Hello World',
+    message: 'Sortify API is running! 🚀',
     timestamp: new Date().toISOString(),
     runtime: 'Bun + Hono',
+    environment: process.env.NODE_ENV || 'development',
   });
 });
 
-// Export for Bun
+app.get('/health', (c) => {
+  return c.json({ status: 'healthy', uptime: process.uptime() });
+});
+
+// Export for Railway (uses dynamic port)
 export default {
-  port: 3000,
+  port: process.env.PORT || 3000,
+  hostname: '0.0.0.0', // Important for Railway
   fetch: app.fetch,
 };
