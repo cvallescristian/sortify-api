@@ -5,25 +5,28 @@
   "scripts": {
     "dev": "bun --watch index.ts",
     "start": "bun index.ts",
-    "lint": "eslint *.ts **/*.ts",
-    "lint:fix": "eslint *.ts **/*.ts --fix",
+    "build": "bun build index.ts --outdir ./dist --target node",
+    "lint": "eslint \"**/*.{js,ts}\"",
+    "lint:fix": "eslint \"**/*.{js,ts}\" --fix",
     "format": "prettier --write .",
-    "test": "bun test"
+    "format:check": "prettier --check .",
+    "type-check": "bun --no-install tsc --noEmit",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "ci": "bun run lint && bun run format:check && bun run type-check && bun run test && bun run build",
+    "ci:fix": "bun run lint:fix && bun run format && bun run type-check && bun run test && bun run build"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@typescript-eslint/eslint-plugin": "5",
-    "@typescript-eslint/parser": "5",
-    "eslint": "8",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "prettier": "^3.6.2"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+    "eslint": "^8.57.1",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "prettier": "^3.0.0",
+    "eslint-config-prettier": "^9.0.0"
   },
   "dependencies": {
-    "@spotify/web-api-ts-sdk": "^1.2.0",
-    "hono": "^4.9.2"
+    "hono": "latest",
+    "spotify-web-api-node": "latest"
   }
 }
