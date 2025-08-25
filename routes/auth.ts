@@ -50,4 +50,11 @@ auth.post('/logout', (c) => {
   return c.json(result);
 });
 
+// Debug endpoint to test user profile data
+auth.get('/debug-profile', (c) => {
+  const sessionId = c.req.header('Authorization')?.replace('Bearer ', '') || '';
+  const result = handleProfile(sessionId);
+  return c.json(result, result.success ? 200 : 401);
+});
+
 export default auth;
