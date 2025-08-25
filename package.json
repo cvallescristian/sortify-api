@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "hono": "latest",
-    "spotify-web-api-node": "latest"
+    "spotify-web-api-node": "latest",
+    "dotenv": "^16.3.1"
   }
 }

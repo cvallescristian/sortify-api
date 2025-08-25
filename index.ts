@@ -1,10 +1,17 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import auth from './routes/auth.js';
+
+// Load environment variables
+import 'dotenv/config';
 
 const app = new Hono();
 
 // Add CORS middleware
 app.use('*', cors());
+
+// Mount authentication routes
+app.route('/auth', auth);
 
 // Hello World routes
 app.get('/', (c) => {
