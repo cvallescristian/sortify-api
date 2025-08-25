@@ -35,5 +35,7 @@ export const SPOTIFY_SCOPES = [
   'user-modify-playback-state',
   'playlist-read-private',
   'playlist-modify-public',
-  'playlist-modify-private'
+  'playlist-modify-private',
+  'user-follow-read',
+  'user-library-modify'
 ];

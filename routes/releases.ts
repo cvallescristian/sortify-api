@@ -1,24 +1,33 @@
 import { Hono } from 'hono';
-import { handleGetLatestReleases, handleGetFollowedArtistsReleases, handleCreatePlaylistFromReleases } from '../services/spotify/releases/handler.js';
+import { handleGetFollowedArtistsReleases, handleCreatePlaylistFromReleases, handleGetTrackIdsFromReleases } from '../services/spotify/releases/handler.js';
 
 const releases = new Hono();
 
-// Get latest releases
-releases.get('/', async (c) => {
-  const sessionId = c.req.header('Authorization')?.replace('Bearer ', '') || '';
-  const limit = c.req.query('limit');
-  const limitNum = limit ? parseInt(limit) : undefined;
-  const result = await handleGetLatestReleases(sessionId, limitNum);
-  return c.json(result, result.success ? 200 : 401);
-});
-
 // Get followed artists releases
-releases.get('/followed', async (c) => {
+releases.get('/', async (c) => {
   const sessionId = c.req.header('Authorization')?.replace('Bearer ', '') || '';
   const limit = c.req.query('limit');
   const limitNum = limit ? parseInt(limit) : undefined;
   const result = await handleGetFollowedArtistsReleases(sessionId, limitNum);
   return c.json(result, result.success ? 200 : 401);
+});
+
+// Get track IDs from releases
+releases.post('/track-ids', async (c) => {
+  const sessionId = c.req.header('Authorization')?.replace('Bearer ', '') || '';
+  const body = await c.req.json();
+  
+  const { releaseIds } = body;
+  
+  if (!releaseIds || !Array.isArray(releaseIds) || releaseIds.length === 0) {
+    return c.json({
+      success: false,
+      error: 'releaseIds array is required with at least one release ID'
+    }, 400);
+  }
+  
+  const result = await handleGetTrackIdsFromReleases(sessionId, releaseIds);
+  return c.json(result, result.success ? 200 : 400);
 });
 
 // Create playlist from releases

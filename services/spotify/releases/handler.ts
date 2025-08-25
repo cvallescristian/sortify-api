@@ -1,38 +1,6 @@
-import { getLatestReleases, getFollowedArtistsReleases, getTracksFromReleases } from '../releases.js';
+import { getFollowedArtistsReleases, getTracksFromReleases, getTrackIdsFromReleases } from '../releases.js';
 import { getSession } from '../session.js';
 import { getSpotifyApi } from '../client.js';
-
-export async function handleGetLatestReleases(sessionId: string, limit?: number) {
-  if (!sessionId) {
-    return {
-      success: false,
-      error: 'Session ID is required',
-    };
-  }
-
-  const session = getSession(sessionId);
-  if (!session) {
-    return {
-      success: false,
-      error: 'Invalid or expired session',
-    };
-  }
-
-  try {
-    const releases = await getLatestReleases(session.tokens.access_token, limit || 20);
-    return {
-      success: true,
-      releases,
-      count: releases.length,
-    };
-  } catch (error) {
-    console.error('Error getting latest releases:', error);
-    return {
-      success: false,
-      error: 'Failed to fetch latest releases',
-    };
-  }
-}
 
 export async function handleGetFollowedArtistsReleases(sessionId: string, limit?: number) {
   if (!sessionId) {
@@ -62,6 +30,46 @@ export async function handleGetFollowedArtistsReleases(sessionId: string, limit?
     return {
       success: false,
       error: 'Failed to fetch followed artists releases',
+    };
+  }
+}
+
+export async function handleGetTrackIdsFromReleases(sessionId: string, releaseIds: string[]) {
+  if (!sessionId) {
+    return {
+      success: false,
+      error: 'Session ID is required',
+    };
+  }
+
+  if (!releaseIds || releaseIds.length === 0) {
+    return {
+      success: false,
+      error: 'At least one release ID is required',
+    };
+  }
+
+  const session = getSession(sessionId);
+  if (!session) {
+    return {
+      success: false,
+      error: 'Invalid or expired session',
+    };
+  }
+
+  try {
+    const trackIds = await getTrackIdsFromReleases(session.tokens.access_token, releaseIds);
+    return {
+      success: true,
+      trackIds,
+      count: trackIds.length,
+      sourceReleases: releaseIds.length,
+    };
+  } catch (error) {
+    console.error('Error getting track IDs from releases:', error);
+    return {
+      success: false,
+      error: 'Failed to fetch track IDs from releases',
     };
   }
 }
@@ -105,12 +113,12 @@ export async function handleCreatePlaylistFromReleases(
     const api = getSpotifyApi();
     api.setAccessToken(session.tokens.access_token);
 
-    // Get user ID for creating the playlist
-    const userResponse = await api.getMe();
-    const userId = userResponse.body.id;
-
     // Create new playlist
-    const createResponse = await (api as any).createPlaylist(userId, name.trim());
+    const createResponse = await api.createPlaylist(name.trim(), {
+      description: description,
+      public: true,
+      collaborative: false,
+    });
 
     const newPlaylist = createResponse.body;
 

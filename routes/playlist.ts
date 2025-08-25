@@ -3,6 +3,8 @@ import { handleListPlaylists } from '../services/spotify/playlist/list.js';
 import { handleGetPlaylist } from '../services/spotify/playlist/detail.js';
 import { handleGetPlaylistTracks } from '../services/spotify/playlist/tracks.js';
 import { handleMergePlaylists } from '../services/spotify/playlist/merge.js';
+import { handleCreatePlaylistWithTracks } from '../services/spotify/playlist/create.js';
+import { handleCheckPlaylistExists } from '../services/spotify/playlist/check.js';
 
 const playlist = new Hono();
 
@@ -28,6 +30,24 @@ playlist.get('/:playlistId/tracks', async (c) => {
   const playlistId = c.req.param('playlistId');
   const result = await handleGetPlaylistTracks(sessionId, playlistId);
   return c.json(result, result.success ? 200 : 401);
+});
+
+// Check if playlist exists by name
+playlist.post('/check-exists', async (c) => {
+  const sessionId = c.req.header('Authorization')?.replace('Bearer ', '') || '';
+  const body = await c.req.json();
+  
+  const { name } = body;
+  
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return c.json({
+      success: false,
+      error: 'name is required and must be a non-empty string'
+    }, 400);
+  }
+  
+  const result = await handleCheckPlaylistExists(sessionId, name);
+  return c.json(result, result.success ? 200 : 400);
 });
 
 // Merge playlists into a new playlist
@@ -56,6 +76,39 @@ playlist.post('/merge', async (c) => {
     playlistIds,
     name,
     description || ''
+  );
+  
+  return c.json(result, result.success ? 201 : 400);
+});
+
+// Create new playlist with tracks
+playlist.post('/create', async (c) => {
+  const sessionId = c.req.header('Authorization')?.replace('Bearer ', '') || '';
+  const body = await c.req.json();
+  
+  const { trackIds, name, description, saveToLibrary, overrideExisting } = body;
+  
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return c.json({
+      success: false,
+      error: 'name is required and must be a non-empty string'
+    }, 400);
+  }
+  
+  if (trackIds && !Array.isArray(trackIds)) {
+    return c.json({
+      success: false,
+      error: 'trackIds must be an array'
+    }, 400);
+  }
+  
+  const result = await handleCreatePlaylistWithTracks(
+    sessionId,
+    name,
+    trackIds || [],
+    description || '',
+    saveToLibrary || false,
+    overrideExisting || false
   );
   
   return c.json(result, result.success ? 201 : 400);
