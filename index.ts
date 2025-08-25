@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import auth from './routes/auth.js';
 import playlist from './routes/playlist.js';
+import releases from './routes/releases.js';
 
 // Load environment variables
 import 'dotenv/config';
@@ -16,6 +17,9 @@ app.route('/auth', auth);
 
 // Mount playlist routes
 app.route('/playlist', playlist);
+
+// Mount releases routes
+app.route('/releases', releases);
 
 // Hello World routes
 app.get('/', (c) => {

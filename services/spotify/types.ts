@@ -69,6 +69,24 @@ export interface SpotifyTrack {
   type: string;
 }
 
+export interface SpotifyRelease {
+  id: string;
+  name: string;
+  artists: Array<{
+    id: string;
+    name: string;
+    external_urls: { spotify: string };
+  }>;
+  album_type: string;
+  total_tracks: number;
+  release_date: string;
+  release_date_precision: string;
+  images?: Array<{ url: string; height?: number; width?: number }>;
+  external_urls: { spotify: string };
+  uri: string;
+  type: string;
+}
+
 export interface Session {
   sessionId: string;
   tokens: SpotifyTokens;
