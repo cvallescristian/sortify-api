@@ -1,8 +1,47 @@
 import { SpotifyRelease } from './types.js';
 import { getSpotifyApi } from './client.js';
 
+interface SpotifyAlbum {
+  id: string;
+  name: string;
+  artists: Array<{
+    id: string;
+    name: string;
+    external_urls: { spotify: string };
+  }>;
+  album_type: string;
+  total_tracks: number;
+  release_date: string;
+  release_date_precision: string;
+  images?: Array<{ url: string; height?: number; width?: number }>;
+  external_urls: { spotify: string };
+  uri: string;
+  type: string;
+}
+
+interface SpotifyTrackSimplified {
+  id: string;
+  name: string;
+  artists: Array<{
+    id: string;
+    name: string;
+    external_urls: { spotify: string };
+  }>;
+  duration_ms: number;
+  external_urls: { spotify: string };
+  uri: string;
+  type: string;
+}
+
+interface SpotifyApi {
+  getFollowedArtists(): Promise<{ body: { artists: { items: Array<{ id: string; name: string }> } } }>;
+  getArtistAlbums(artistId: string, options: { album_type: string; limit: number; market: string }): Promise<{ body: { items: SpotifyAlbum[] } }>;
+  getAlbumTracks(albumId: string): Promise<{ body: { items: SpotifyTrackSimplified[] } }>;
+  setAccessToken(token: string): void;
+}
+
 export async function getFollowedArtistsReleases(accessToken: string, limit: number = 20): Promise<SpotifyRelease[]> {
-  const api = getSpotifyApi();
+  const api = getSpotifyApi() as SpotifyApi;
   api.setAccessToken(accessToken);
   
   try {
@@ -20,7 +59,7 @@ export async function getFollowedArtistsReleases(accessToken: string, limit: num
     
     for (const artist of followedArtists) {
       try {
-        const albumsResponse = await (api as any).getArtistAlbums(artist.id, {
+        const albumsResponse = await api.getArtistAlbums(artist.id, {
           album_type: 'album,single',
           limit: 10,
           market: 'from_token'
@@ -32,7 +71,7 @@ export async function getFollowedArtistsReleases(accessToken: string, limit: num
         const threeMonthsAgo = new Date();
         threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
         
-        albums.forEach((album: any) => {
+        albums.forEach((album: SpotifyAlbum) => {
           if (album && album.id && !seenReleases.has(album.id)) {
             const releaseDate = new Date(album.release_date);
             if (releaseDate >= threeMonthsAgo) {
@@ -69,42 +108,8 @@ export async function getFollowedArtistsReleases(accessToken: string, limit: num
   }
 }
 
-export async function getTracksFromReleases(accessToken: string, releaseIds: string[]): Promise<string[]> {
-  const api = getSpotifyApi();
-  api.setAccessToken(accessToken);
-  
-  try {
-    const allTrackUris: string[] = [];
-    const trackIds = new Set<string>(); // To avoid duplicates
-    
-    for (const releaseId of releaseIds) {
-      try {
-        // Get tracks from the album
-        const tracksResponse = await api.getAlbumTracks(releaseId);
-        const tracks = tracksResponse.body.items;
-        
-        // Filter out duplicates and add to collection
-        tracks.forEach((track: any) => {
-          if (track && track.id && !trackIds.has(track.id)) {
-            trackIds.add(track.id);
-            allTrackUris.push(track.uri);
-          }
-        });
-      } catch (error) {
-        console.error(`Error fetching tracks from release ${releaseId}:`, error);
-        // Continue with other releases even if one fails
-      }
-    }
-    
-    return allTrackUris;
-  } catch (error) {
-    console.error('Error fetching tracks from releases:', error);
-    throw error;
-  }
-}
-
 export async function getTrackIdsFromReleases(accessToken: string, releaseIds: string[]): Promise<string[]> {
-  const api = getSpotifyApi();
+  const api = getSpotifyApi() as SpotifyApi;
   api.setAccessToken(accessToken);
   
   try {
@@ -118,7 +123,7 @@ export async function getTrackIdsFromReleases(accessToken: string, releaseIds: s
         const tracks = tracksResponse.body.items;
         
         // Filter out duplicates and add to collection
-        tracks.forEach((track: any) => {
+        tracks.forEach((track: SpotifyTrackSimplified) => {
           if (track && track.id && !trackIds.has(track.id)) {
             trackIds.add(track.id);
             allTrackIds.push(track.id);

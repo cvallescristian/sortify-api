@@ -1,4 +1,4 @@
-import { getFollowedArtistsReleases, getTracksFromReleases, getTrackIdsFromReleases } from '../releases.js';
+import { getFollowedArtistsReleases, getTrackIdsFromReleases } from '../releases.js';
 import { getSession } from '../session.js';
 import { getSpotifyApi } from '../client.js';
 
@@ -122,8 +122,9 @@ export async function handleCreatePlaylistFromReleases(
 
     const newPlaylist = createResponse.body;
 
-    // Get track URIs from the selected releases
-    const trackUris = await getTracksFromReleases(session.tokens.access_token, releaseIds);
+    // Get track IDs from the selected releases and convert to URIs
+    const trackIds = await getTrackIdsFromReleases(session.tokens.access_token, releaseIds);
+    const trackUris = trackIds.map(id => `spotify:track:${id}`);
 
     if (trackUris.length === 0) {
       return {

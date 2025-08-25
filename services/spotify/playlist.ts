@@ -43,7 +43,9 @@ export async function getPlaylistTracks(accessToken: string, playlistId: string)
   
   try {
     const response = await api.getPlaylistTracks(playlistId);
-    return response.body.items.map((item: any) => item.track) as SpotifyTrack[];
+    return response.body.items
+      .map((item: { track: SpotifyTrack | null }) => item.track)
+      .filter((track): track is SpotifyTrack => track !== null);
   } catch (error) {
     console.error('Error fetching playlist tracks:', error);
     throw error;
@@ -86,7 +88,7 @@ export async function createPlaylistWithTracks(
     // Save to library if requested
     if (saveToLibrary) {
       try {
-        await savePlaylistToLibrary(accessToken, newPlaylist.id);
+        await api.followPlaylist(newPlaylist.id);
       } catch (error) {
         console.error('Failed to save playlist to library:', error);
         // Don't fail the entire operation if saving to library fails
@@ -96,18 +98,6 @@ export async function createPlaylistWithTracks(
     return newPlaylist;
   } catch (error) {
     console.error('Error creating playlist with tracks:', error);
-    throw error;
-  }
-}
-
-export async function savePlaylistToLibrary(accessToken: string, playlistId: string): Promise<void> {
-  const api = getSpotifyApi();
-  api.setAccessToken(accessToken);
-  
-  try {
-    await api.followPlaylist(playlistId);
-  } catch (error) {
-    console.error('Error saving playlist to library:', error);
     throw error;
   }
 }

@@ -58,8 +58,8 @@ export async function handleMergePlaylists(
       try {
         const tracksResponse = await api.getPlaylistTracks(playlistId);
         const tracks = tracksResponse.body.items
-          .map((item: any) => item.track)
-          .filter((track: SpotifyTrack) => track && track.id && !trackIds.has(track.id));
+          .map((item: { track: SpotifyTrack | null }) => item.track)
+          .filter((track): track is SpotifyTrack => track !== null && !trackIds.has(track.id));
 
         tracks.forEach((track: SpotifyTrack) => {
           trackIds.add(track.id);

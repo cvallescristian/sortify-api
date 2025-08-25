@@ -1,19 +1,20 @@
-import { Session, SpotifyTokens, SpotifyUser } from './types.js';
+import { SpotifyTokens, SpotifyUser } from './types.js';
 
+// In-memory session storage (in production, use Redis or database)
 const sessions = new Map<string, Session>();
 
-export function generateSessionId(): string {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15);
+interface Session {
+  tokens: SpotifyTokens;
+  user: SpotifyUser;
+  createdAt: Date;
 }
 
 export function createSession(tokens: SpotifyTokens, user: SpotifyUser): string {
   const sessionId = generateSessionId();
   sessions.set(sessionId, {
-    sessionId,
     tokens,
     user,
-    createdAt: Date.now(),
+    createdAt: new Date(),
   });
   return sessionId;
 }
@@ -26,6 +27,7 @@ export function deleteSession(sessionId: string): boolean {
   return sessions.delete(sessionId);
 }
 
-export function getAllSessions(): Session[] {
-  return Array.from(sessions.values());
+// Internal function for generating session IDs
+function generateSessionId(): string {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }

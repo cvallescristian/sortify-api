@@ -86,10 +86,3 @@ export interface SpotifyRelease {
   uri: string;
   type: string;
 }
-
-export interface Session {
-  sessionId: string;
-  tokens: SpotifyTokens;
-  user: SpotifyUser;
-  createdAt: number;
-}

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'bun:test';
+import { describe, it, expect, beforeEach } from 'bun:test';
 import { Hono } from 'hono';
 import auth from './routes/auth.js';
 
@@ -8,7 +8,7 @@ import 'dotenv/config';
 describe('Spotify Auth API', () => {
   let app: Hono;
 
-  beforeAll(() => {
+  beforeEach(() => {
     app = new Hono();
     app.route('/auth', auth);
   });
@@ -45,26 +45,22 @@ describe('Spotify Auth API', () => {
   });
 
   describe('GET /auth/callback', () => {
-    it('should return error for missing authorization code', async () => {
+    it('should redirect to frontend with error for missing authorization code', async () => {
       const req = new Request('http://localhost/auth/callback');
       const res = await app.request(req);
-      const data = await res.json();
 
-      expect(res.status).toBe(400);
-      expect(data.success).toBe(false);
-      expect(data.error).toBe('Authorization code is required');
+      expect(res.status).toBe(302); // Redirect status
+      expect(res.headers.get('location')).toContain('/auth/callback?error=');
     });
 
-    it('should return error for invalid authorization code', async () => {
+    it('should redirect to frontend with error for invalid authorization code', async () => {
       const req = new Request(
         'http://localhost/auth/callback?code=invalid_code'
       );
       const res = await app.request(req);
-      const data = await res.json();
 
-      expect(res.status).toBe(500);
-      expect(data.success).toBe(false);
-      expect(data.error).toBe('Failed to complete authentication');
+      expect(res.status).toBe(302); // Redirect status
+      expect(res.headers.get('location')).toContain('/auth/callback?error=');
     });
   });
 

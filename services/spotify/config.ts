@@ -1,14 +1,6 @@
 import { SpotifyConfig } from './types.js';
 
 export function getSpotifyConfig(): SpotifyConfig {
-  // Debug logging
-  console.log('Environment variables check:');
-  console.log('SPOTIFY_CLIENT_ID:', process.env.SPOTIFY_CLIENT_ID ? 'SET' : 'NOT SET');
-  console.log('SPOTIFY_CLIENT_SECRET:', process.env.SPOTIFY_CLIENT_SECRET ? 'SET' : 'NOT SET');
-  console.log('SPOTIFY_REDIRECT_URI:', process.env.SPOTIFY_REDIRECT_URI ? 'SET' : 'NOT SET');
-  console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('SPOTIFY')));
-  
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
   const redirectUri = process.env.SPOTIFY_REDIRECT_URI;

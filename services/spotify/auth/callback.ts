@@ -10,7 +10,7 @@ export async function handleCallback(code: string, error?: string) {
     }
 
     if (!code) {
-      return { success: false, error: 'No authorization code received' };
+      return { success: false, error: 'Authorization code is required' };
     }
 
     // Exchange code for tokens
