@@ -28,7 +28,16 @@ app.get('/', (c) => {
 });
 
 app.get('/health', (c) => {
-  return c.json({ status: 'healthy', uptime: process.uptime() });
+  return c.json({ 
+    status: 'healthy', 
+    uptime: process.uptime(),
+    env: {
+      hasClientId: !!process.env.SPOTIFY_CLIENT_ID,
+      hasClientSecret: !!process.env.SPOTIFY_CLIENT_SECRET,
+      hasRedirectUri: !!process.env.SPOTIFY_REDIRECT_URI,
+      nodeEnv: process.env.NODE_ENV
+    }
+  });
 });
 
 // Export for Railway (uses dynamic port)
