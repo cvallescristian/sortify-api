@@ -15,3 +15,6 @@ export { getUserProfile } from './user.js';
 
 // Session management
 export { createSession, getSession, deleteSession, getAllSessions, generateSessionId } from './session.js';
+
+// Playlist management
+export { getUserPlaylists, getPlaylist, getPlaylistTracks } from './playlist.js';

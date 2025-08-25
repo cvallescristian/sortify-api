@@ -26,6 +26,49 @@ export interface SpotifyUser {
   birthdate?: string;
 }
 
+export interface SpotifyPlaylist {
+  id: string;
+  name: string;
+  description?: string;
+  images?: Array<{ url: string; height?: number; width?: number }>;
+  owner: {
+    id: string;
+    display_name: string;
+    external_urls: { spotify: string };
+  };
+  public: boolean;
+  collaborative: boolean;
+  tracks: {
+    href: string;
+    total: number;
+  };
+  type: string;
+  uri: string;
+  href: string;
+  external_urls: { spotify: string };
+  snapshot_id: string;
+}
+
+export interface SpotifyTrack {
+  id: string;
+  name: string;
+  artists: Array<{
+    id: string;
+    name: string;
+    external_urls: { spotify: string };
+  }>;
+  album: {
+    id: string;
+    name: string;
+    images?: Array<{ url: string; height?: number; width?: number }>;
+    external_urls: { spotify: string };
+  };
+  duration_ms: number;
+  external_urls: { spotify: string };
+  uri: string;
+  type: string;
+}
+
 export interface Session {
   sessionId: string;
   tokens: SpotifyTokens;
