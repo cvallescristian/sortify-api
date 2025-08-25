@@ -5,10 +5,11 @@ import { handleGetPlaylistTracks } from '../services/spotify/playlist/tracks.js'
 
 const playlist = new Hono();
 
-// Get user's playlists
+// Get user's playlists (with optional search)
 playlist.get('/', async (c) => {
   const sessionId = c.req.header('Authorization')?.replace('Bearer ', '') || '';
-  const result = await handleListPlaylists(sessionId);
+  const searchQuery = c.req.query('search') || undefined;
+  const result = await handleListPlaylists(sessionId, searchQuery);
   return c.json(result, result.success ? 200 : 401);
 });
 

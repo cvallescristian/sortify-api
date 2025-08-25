@@ -1,13 +1,23 @@
 import { SpotifyPlaylist, SpotifyTrack } from './types.js';
 import { getSpotifyApi } from './client.js';
 
-export async function getUserPlaylists(accessToken: string): Promise<SpotifyPlaylist[]> {
+export async function getUserPlaylists(accessToken: string, searchQuery?: string): Promise<SpotifyPlaylist[]> {
   const api = getSpotifyApi();
   api.setAccessToken(accessToken);
   
   try {
     const response = await api.getUserPlaylists();
-    return response.body.items as SpotifyPlaylist[];
+    let playlists = response.body.items as SpotifyPlaylist[];
+    
+    // Filter by search query if provided
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      playlists = playlists.filter(playlist => 
+        playlist.name.toLowerCase().includes(query)
+      );
+    }
+    
+    return playlists;
   } catch (error) {
     console.error('Error fetching user playlists:', error);
     throw error;

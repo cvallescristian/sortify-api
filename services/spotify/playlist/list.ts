@@ -1,7 +1,7 @@
 import { getUserPlaylists } from '../playlist.js';
 import { getSession } from '../session.js';
 
-export async function handleListPlaylists(sessionId: string) {
+export async function handleListPlaylists(sessionId: string, searchQuery?: string) {
   if (!sessionId) {
     return {
       success: false,
@@ -18,11 +18,12 @@ export async function handleListPlaylists(sessionId: string) {
   }
 
   try {
-    const playlists = await getUserPlaylists(session.tokens.access_token);
+    const playlists = await getUserPlaylists(session.tokens.access_token, searchQuery);
     return {
       success: true,
       playlists,
       count: playlists.length,
+      searchQuery: searchQuery || null,
     };
   } catch (error) {
     console.error('Error listing playlists:', error);
