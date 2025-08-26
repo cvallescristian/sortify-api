@@ -6,18 +6,59 @@ export async function getUserPlaylists(accessToken: string, searchQuery?: string
   api.setAccessToken(accessToken);
   
   try {
-    const response = await api.getUserPlaylists();
-    let playlists = response.body.items as SpotifyPlaylist[];
+    // Try to get more playlists by using pagination and different parameters
+    let allPlaylists: SpotifyPlaylist[] = [];
+    let offset = 0;
+    const limit = 50;
+    let hasMore = true;
+    
+    // Fetch playlists with pagination to get all available playlists
+    while (hasMore) {
+      try {
+        const response = await api.getUserPlaylists({ 
+          limit, 
+          offset 
+        });
+        
+        const playlists = response.body.items as SpotifyPlaylist[];
+        allPlaylists = [...allPlaylists, ...playlists];
+        
+        // Check if there are more playlists to fetch
+        hasMore = playlists.length === limit;
+        offset += limit;
+        
+        // Safety check to prevent infinite loops
+        if (offset > 1000) {
+          console.warn('Reached maximum playlist fetch limit');
+          break;
+        }
+      } catch (error) {
+        console.error(`Error fetching playlists at offset ${offset}:`, error);
+        break;
+      }
+    }
+    
+    // Remove duplicates based on playlist ID
+    const uniquePlaylists = allPlaylists.filter((playlist, index, self) => 
+      index === self.findIndex(p => p.id === playlist.id)
+    );
+    
+    console.log(`Fetched ${uniquePlaylists.length} unique playlists from Spotify API`);
+    console.log('Playlist names:', uniquePlaylists.map(p => p.name));
     
     // Filter by search query if provided
     if (searchQuery && searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      playlists = playlists.filter(playlist => 
-        playlist.name.toLowerCase().includes(query)
+      return uniquePlaylists.filter(playlist => 
+        playlist.name.toLowerCase().includes(query) ||
+        (playlist.owner && playlist.owner.display_name.toLowerCase().includes(query))
       );
     }
     
-    return playlists;
+    // Sort playlists by name for consistent ordering
+    uniquePlaylists.sort((a, b) => a.name.localeCompare(b.name));
+    
+    return uniquePlaylists;
   } catch (error) {
     console.error('Error fetching user playlists:', error);
     throw error;
@@ -107,9 +148,8 @@ export async function findPlaylistByName(accessToken: string, name: string): Pro
   api.setAccessToken(accessToken);
   
   try {
-    // Get user's playlists
-    const response = await api.getUserPlaylists();
-    const playlists = response.body.items as SpotifyPlaylist[];
+    // Get all user's playlists using the comprehensive approach
+    const playlists = await getUserPlaylists(accessToken);
     
     // Find playlist with exact name match
     const existingPlaylist = playlists.find(playlist => 
