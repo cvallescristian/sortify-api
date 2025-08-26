@@ -5,6 +5,7 @@ import { handleGetPlaylistTracks } from '../services/spotify/playlist/tracks.js'
 import { handleMergePlaylists } from '../services/spotify/playlist/merge.js';
 import { handleCreatePlaylistWithTracks } from '../services/spotify/playlist/create.js';
 import { handleCheckPlaylistExists } from '../services/spotify/playlist/check.js';
+import { handleDeletePlaylist } from '../services/spotify/playlist/delete.js';
 
 const playlist = new Hono();
 
@@ -112,6 +113,14 @@ playlist.post('/create', async (c) => {
   );
   
   return c.json(result, result.success ? 201 : 400);
+});
+
+// Delete playlist
+playlist.delete('/:playlistId', async (c) => {
+  const sessionId = c.req.header('Authorization')?.replace('Bearer ', '') || '';
+  const playlistId = c.req.param('playlistId');
+  const result = await handleDeletePlaylist(sessionId, playlistId);
+  return c.json(result, result.success ? 200 : 400);
 });
 
 export default playlist;
