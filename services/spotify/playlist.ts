@@ -83,10 +83,59 @@ export async function getPlaylistTracks(accessToken: string, playlistId: string)
   api.setAccessToken(accessToken);
   
   try {
-    const response = await api.getPlaylistTracks(playlistId);
-    return response.body.items
-      .map((item: { track: SpotifyTrack | null }) => item.track)
-      .filter((track): track is SpotifyTrack => track !== null);
+    let allTracks: SpotifyTrack[] = [];
+    let offset = 0;
+    const limit = 100; // Spotify API max limit per request
+    let hasMore = true;
+    
+    // Fetch all tracks using pagination
+    while (hasMore) {
+      try {
+        const response = await api.getPlaylistTracks(playlistId, {
+          limit,
+          offset
+        });
+        
+        // Validate response structure
+        if (!response.body || !response.body.items || !Array.isArray(response.body.items)) {
+          console.error(`Invalid response structure for playlist ${playlistId} at offset ${offset}:`, response.body);
+          break;
+        }
+        
+        const tracks = response.body.items
+          .map((item: { track: SpotifyTrack | null }) => {
+            if (!item || !item.track) {
+              console.warn(`Skipping null track item at offset ${offset}:`, item);
+              return null;
+            }
+            return item.track;
+          })
+          .filter((track): track is SpotifyTrack => track !== null);
+        
+        allTracks = [...allTracks, ...tracks];
+        
+        // Check if there are more tracks to fetch
+        hasMore = tracks.length === limit;
+        offset += limit;
+        
+        // Add a small delay to avoid rate limiting
+        if (hasMore) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        // Safety check to prevent infinite loops
+        if (offset > 10000) {
+          console.warn('Reached maximum track fetch limit');
+          break;
+        }
+      } catch (error) {
+        console.error(`Error fetching tracks at offset ${offset}:`, error);
+        break;
+      }
+    }
+    
+    console.log(`Fetched ${allTracks.length} tracks from playlist ${playlistId}`);
+    return allTracks;
   } catch (error) {
     console.error('Error fetching playlist tracks:', error);
     throw error;
